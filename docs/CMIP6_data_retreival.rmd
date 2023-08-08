@@ -1,0 +1,23 @@
+#Introduction to accessing CMIP6 model output
+
+## Identifying the desired model product
+
+Determining the right model product for each application is not trivial. There are a numerous products within CMIP6 and all have differences in extent, resolution, duration, internal processes, and skill. Selecting which product to use is outside the scope of this tutorial but once selected, can still be a daunting task to actually find and download the needed data.
+
+Let's say that you've already decided you want to use some version of GFDL's CM4 projections. You'll need to find the official product name through a search of the [World Climate Research Programme's database| https://esgf-node.llnl.gov/search/cmip6/].
+
+### Key fields to narrow it down:
+- `Source ID` : What is the product name (e.g. GFDL-Cm4)
+- `Source Type` : What type of model it is (e.g. AOGCM/ Atm Ocean Global Climate Model)
+- `Experiment ID` : What model scenario it is (e.g. ssp245, historical, etc.)
+- `Grid Label` : The type of grid. Usually either on original grid (gn) or regular grid (gr)
+- `Variable` : Which fields from product to download (e.g. temperature = "thetao")
+
+Using this we can identify the full product string for 3D temperature projections for GFDL's CM4 under the ssp245 scenario. Giving us: `	
+CMIP6.ScenarioMIP.NOAA-GFDL.GFDL-CM4.ssp245.r1i1p1f1.Omon.thetao.gr`
+
+### Downloading data
+
+We can access the data from the [Earth System Grid Federation's database| https://aims2.llnl.gov/search] by copying our product text string into the search. Then select `wget` under `Download Options` and click the download button next to the appropriate match. 
+
+This will download a shell script that can be run in any linux environment to download individual data files within the package.
