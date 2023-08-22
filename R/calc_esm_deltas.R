@@ -6,23 +6,36 @@ library(tidync)
 ### NEW 06/09/2022: MAKE THIS 1993-2018 FOR BOTH SETS OF MODELS
 ### EXPLICITLY PLOT THE DELTAS
 
-setwd("~/GLORYS_ESM_data")
-all_fl <- list.files('raw_model_output',full.names = T)
-ipsl_historical_fl <- all_fl[which(grepl("IPSL",all_fl)&grepl("historical",all_fl))]
+# setwd("~/GLORYS_ESM_data")
+gfdl.dir = '/home/azureuser/NEMOW/GFDL_CM4'
+all_fl <- list.files(gfdl.dir,'*.nc',full.names = F)
+all_fl_full <- list.files(gfdl.dir,'*.nc',full.names = T)
+
 gfdl_historical_fl <- all_fl[which(grepl("GFDL",all_fl)&grepl("historical",all_fl))]
-had_historical_fl <- all_fl[which(grepl("HadGEM2",all_fl)&grepl("historical",all_fl))]
-ipsl_future_fl <- all_fl[which(grepl("IPSL",all_fl)&grepl("rcp85",all_fl))]
-gfdl_future_fl <- all_fl[which(grepl("GFDL",all_fl)&grepl("rcp85",all_fl))]
-had_future_fl <- all_fl[which(grepl("HadGEM2",all_fl)&grepl("rcp85",all_fl))]
+gfdl_historical_fl_full <- all_fl_full[which(grepl("GFDL",all_fl)&grepl("historical",all_fl_full))]
+
+gfdl_future_fl <- all_fl[which(grepl("GFDL",all_fl)&grepl("ssp245",all_fl))]
+gfdl_future_fl_full <- all_fl_full[which(grepl("GFDL",all_fl)&grepl("ssp245",all_fl_full))]
+
+gfdl_historical_time = sapply(gfdl_historical_fl,function(x) strsplit(x,'_|.nc')[[1]][7],USE.NAMES = F)
+gfdl_future_time = sapply(gfdl_future_fl,function(x) strsplit(x,'_|.nc')[[1]][7],USE.NAMES = F)
+
+merged.time = c('1990-2054')
 
 ## Pre-process step: stitch historical and future ESMs so we end up matching time periods with GLORYS
-system(paste0('sudo cdo -sinfon ',gfdl_historical_fl[1]))
-system(paste0('sudo cdo -sinfon ',gfdl_future_fl[1]))
+system(paste0('sudo cdo -sinfon ',gfdl_historical_fl_full[1]))
+system(paste0('sudo cdo -sinfon ',gfdl_future_fl_full[1]))
 
-merge_esm_past_future <- function(hfile,ffile){
-  ofile <- hfile %>% str_replace("historical","merged") %>% str_replace("1976-2005","1976-2100")
-  ofile <- paste0("merged_ESMs/",ofile)
-  cmd1 <- paste('sudo cdo -mergetime,',hfile,ffile,ofile)
+merge_esm_past_future <- function(data.dir,hfile,ffile,merged.time){
+  if(!dir.exists(paste0(data.dir,'/merged_ESM'))){
+    dir.create(paste0(data.dir,'/merged_ESM'))
+  }
+  time.str = strsplit(hfile[1],'_|.nc')[[1]][7]
+  ofile <- hfile[1] %>% str_replace("historical","merged") %>% str_replace(time.str,merged.time)
+  ofile <- paste0(data.dir,"/merged_ESM/",ofile)
+  hfile.str = paste0(data.dir,'/',hfile, collapse = ' ')
+  ffile.str = paste0(data.dir,'/',ffile, collapse = ' ')
+  cmd1 <- paste('sudo cdo -mergetime,',hfile.str,ffile.str,ofile)
   system(cmd1)
 }
 
@@ -33,7 +46,10 @@ calc_esm_delta <- function(mergefile){
   if(grepl('zos',mergefile)) vn <- 'zos'
   newvn <- paste0('delta_',vn)
   esm <- str_split(mergefile,"_")[[1]][5]
-  ofile <- paste0('esm_climatology/',esm,"_",newvn,".nc")
+  if(!dir.exists(paste0(data.dir,'/ESM_climatology'))){
+    dir.create(paste0(data.dir,'/ESM_climatology'))
+  }
+  ofile <- paste0(data.dir,'/ESM_climatology/',esm,"_",newvn,".nc")
   cmd <- paste0('sudo cdo -O -chname,',vn,',',newvn,' -ymonsub ',mergefile,' -ymonmean -selyear,1993/2018 ',mergefile,' ',ofile)
   # if the variable is si, no3, or o2, need to convert from mol/m3 to mmol/m3 to match GLORYS
   if(grepl('no3',mergefile)|grepl('o2',mergefile)|grepl('si',mergefile)){
@@ -66,14 +82,16 @@ calc_esm_proportional_delta <- function(mergefile){
   system(cmd)
 }
 
-fl_tbl <- tibble(h=c(gfdl_historical_fl,ipsl_historical_fl,had_historical_fl),f=c(gfdl_future_fl,ipsl_future_fl,had_future_fl))
+fl_tbl <- tibble(h=c(gfdl_historical_fl),f=c(gfdl_future_fl))
 
 # apply to everything
 
-purrr::pwalk(list(fl_tbl$h,fl_tbl$f),merge_esm_past_future)
+merge_esm_past_future(data.dir = gfdl.dir,
+                      hfile = fl_tbl$h,
+                      ffile = fl_tbl$f,
+                      merged.time)
+purrr::pwalk(list(data.dir = gfdl.dir,hfile = fl_tbl$h,ffile = fl_tbl$f, merged.time),merge_esm_past_future)
 
 # we do additive deltas for everything except chl
-mergedfls <- list.files("merged_ESMs",full.names = T) %>% str_subset("chl",negate=TRUE)
-chlfls <- list.files("merged_ESMs",full.names = T) %>% str_subset("chl")
-purrr::walk(mergedfls,calc_esm_delta)
-purrr::walk(chlfls,calc_esm_proportional_delta)
+mergefile <- list.files(paste0(data.dir,"/merged_ESM"),full.names = T)
+calc_esm_delta(mergefile = mergefile)
