@@ -4,13 +4,16 @@ library(tidyverse)
 library(tidync)
 library(here)
 
-setwd("~/GLORYS_ESM_data")
-all_fl <- list.files(here("GLORYS_ESM_data"),full.names = T)
-glorys_fl <- all_fl[grepl("GLORYS2v4",all_fl)]
+# setwd("~/GLORYS_ESM_data")
+all_fl <- list.files(here("GLORYS"),'.nc',full.names = T)
+glorys_fl <- all_fl[grepl("GLORYS",all_fl)]
 
 calc_glorys_clim <- function(hfile){
   vn <- tidync(hfile) %>% hyper_vars() %>% pull('name')
-  ofile <- paste0('glorys_climatology/glorys_',vn,"_clim.nc")
+  if(!dir.exists(here('glorys_climatology'))){
+    dir.create(here('glorys_climatology'))
+  }
+  ofile <- paste0(here(),'/glorys_climatology/glorys_',vn,"_clim.nc")
   cmd <- paste0('sudo cdo -ymonmean ',hfile,' ',ofile)
   system(cmd)
 }
