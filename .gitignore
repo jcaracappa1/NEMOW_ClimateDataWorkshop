@@ -2,5 +2,6 @@
 .Rproj.user
 
 
-GFDL_CM4/*.nc
-GLORYS/*.nc
+GFDL_CM4/*
+GLORYS/*
+glorys_climatology/*
