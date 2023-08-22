@@ -2,4 +2,5 @@
 .Rproj.user
 
 
-GFDL_CM4_example/*.nc
+GFDL_CM4/*.nc
+GLORYS/*.nc
