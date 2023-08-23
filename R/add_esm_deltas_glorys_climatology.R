@@ -1,6 +1,7 @@
 library(tidync)
 library(tidyverse)
 library(tictoc)
+library(here)
 
 
 ## Purpose: Add the ESM delta to the GLORYS climatology
@@ -13,56 +14,70 @@ library(tictoc)
 # seems to work if we just use cmd 'add' for the annual files
 
 # function to do this
-calc_glorys_final <- function(esmfl,glorysfl,timestep, yrs=1976:2100,type='add'){
+calc_glorys_final <- function(esmfl,glorysfl,timestep, yrs=1990:2054,type='add'){
   tic(paste("Calculating final output from",esmfl,"and",glorysfl))
   # first, split esm file by year into separate files
   newflext <- str_replace(esmfl,".nc","_")
-  cmd1 <- paste0('sudo cdo splityear esm_climatology_warp_glorys/',esmfl,' delta_method_final_outputs/',newflext)
+  if(!dir.exists(here('delta_method_final_outputs'))){
+    dir.create(here('delta_method_final_outputs'))
+  }
+  cmd1 <- paste0('sudo cdo splityear ',here(),'/ESM_climatology_warp_glorys/',esmfl,' ',here(),'/delta_method_final_outputs/',newflext)
   system(cmd1)
+  system(paste0('sudo chmod 775 ',here(),'/delta_method_final_outputs/*'))
   
   # then, for each year, calculate and write a final converted file for that variable and year
   for(i in 1:length(yrs)){
     yr=yrs[i]
-    cmd2 <- paste0('sudo cdo setyear,',yr,' glorys_climatology/',glorysfl,' delta_method_final_outputs/tmp1.nc')
+    cmd2 <- paste0('sudo cdo setyear,',yr,' ',here(),'/GLORYS_climatology/',glorysfl,' ',here(),'/delta_method_final_outputs/tmp1.nc')
     system(cmd2)
     ofile <-  str_replace(newflext,"delta","glorys")
     
     # fix degenerate variable created when climatology was averaged, because it messes up adding
-    cmd3 <- paste0('sudo ncks -O -x -v average_DT delta_method_final_outputs/',newflext,yr,'.nc delta_method_final_outputs/tmp2.nc')
+    cmd3 <- paste0('sudo ncks -O -x -v average_DT ',here(),'/delta_method_final_outputs/',newflext,yr,'.nc ',here(),'/delta_method_final_outputs/tmp2.nc')
     system(cmd3)
     
     # if 'type' specified is 'add' (the default) and if monthly timestep, use ymonadd
     # if 'type' specified is 'add' (the default) and if timestep is yearly use add
     # if 'type' specified is NOT 'add' and if monthly timestep, use ymonmul (multiplicative delta)
     # if 'type' specified is 'add' (the default) and if timestep is yearly use mul
+    
+    system(paste0('sudo chmod 775 ',here(),'/delta_method_final_outputs/tmp1.nc'))
+    system(paste0('sudo chmod 775 ',here(),'/delta_method_final_outputs/tmp2.nc'))
 
     if(timestep=='month'){
       fxn <- ifelse(type=="add",'ymonadd','ymonmul')
-      cmd4 <- paste0('sudo cdo ',fxn,' delta_method_final_outputs/tmp1.nc delta_method_final_outputs/tmp2.nc delta_method_final_outputs/',ofile,"_",yr,'.nc')
+      cmd4 <- paste0('sudo cdo ',fxn,' ',here(),'/delta_method_final_outputs/tmp1.nc ',here(),'/delta_method_final_outputs/tmp2.nc ',here(),'/delta_method_final_outputs/',ofile,"_",yr,'.nc')
     }else{
       fxn <- ifelse(type=="add",'add','mul')
-      cmd4 <- paste0('sudo cdo ',fxn,' delta_method_final_outputs/tmp1.nc delta_method_final_outputs/tmp2.nc delta_method_final_outputs/',ofile,yr,'.nc')
+      cmd4 <- paste0('sudo cdo ',fxn,' ',here(),'/delta_method_final_outputs/tmp1.nc ',here(),'/delta_method_final_outputs/tmp2.nc ',here(),'/delta_method_final_outputs/',ofile,yr,'.nc')
     }
     system(cmd4)
   }
   toc()
 }
 
+x = tidync('/home/azureuser/NEMOW/delta_method_final_outputs/tmp1.nc') %>% hyper_tibble() %>% filter( depth <1 & time < 352000)
+  
 # Table of files to apply this to (only do the files that line up right now, which are no3,o2,si,so,thetao,uo,vo,and zos)
-esmfls <- list.files('esm_climatology_warp_glorys')[grepl('_delta_',list.files('esm_climatology_warp_glorys'))]
+esmfls <- list.files(here('ESM_climatology_warp_glorys'))[grepl('_delta_',list.files(here('ESM_climatology_warp_glorys')))]
 
 # esmfls <- esmfls %>% str_subset("chl.nc"|"no3.nc")
 esmfls <- esmfls[str_detect(esmfls,"\\d.nc$",negate=T)|str_detect(esmfls,"o2.nc$",negate=F)|str_detect(esmfls,"no3.nc$",negate=F)]
-glorysfls <- list.files('glorys_climatology')[grepl('.nc',list.files('glorys_climatology'))]
+glorysfls <- list.files(here('GLORYS_climatology'))[grepl('.nc',list.files(here('GLORYS_climatology')))]
 tbl_to_calc <- tibble(esmfl=esmfls) %>% 
-  mutate(glorysfl=rep(glorysfls[c(1,2,4,8:13)],3)) %>% 
-  mutate(timestep=rep(c("year","year","year","year","month","month","month","month","month"),3)) %>% 
-  mutate(type=rep(c("mul",rep('add',8)),3))
+  mutate(glorysfl=glorysfls) %>% 
+  mutate(timestep='month') %>% 
+  mutate(type='add')
 
 #View(tbl_to_calc) #check this to make sure it looks right!
 
 ## apply!
-calc_glorys_final(tbl_to_calc$esmfl[1],tbl_to_calc$glorysfl[1],tbl_to_calc$timestep[1],type=tbl_to_calc$type[1])
+calc_glorys_final(esmfl = tbl_to_calc$esmfl[1],
+                  glorysfl = tbl_to_calc$glorysfl[1],
+                  timestep = tbl_to_calc$timestep[1],
+                  yrs=1990:2054,
+                  type='add'
+                  )
 
 purrr::pwalk(tbl_to_calc %>% slice(-(1:10)),calc_glorys_final)
 
@@ -206,11 +221,14 @@ purrr::pwalk(tbl_to_calc %>% slice(-(1:10)),calc_glorys_final)
 # system('sudo cdo diffn -select,name=vo delta_method/tmp1.nc -select,name=vo delta_method/tmp2.nc')
 
 
-# library(cubeview)
-# ofile <- "delta_method/IPSL-CM5A-MR_glorys_no3.nc"
-# x <- read_stars(ofile)
-# y <- x %>% slice(time,1) %>% st_as_stars()
-# cubeview(y)
+library(cubeview)
+library(stars)
+ofile <- here("delta_method_final_outputs","GFDL-CM4_delta_thetao_1990.nc")
+x = tidync(ofile) %>% hyper_tibble(select_var = 'delta_thetao') %>% filter(time == 51115.5 & lev < 3)
+ggplot(x, aes(x = longitude, y= latitude, color = delta_thetao))+geom_point()
+x <- read_stars(ofile)
+y <- x %>% slice(time,1) %>% st_as_stars()
+cubeview(y)
 
 # deltanc_to_glorys(all_delta_fl[1])
 # try with one year of one file

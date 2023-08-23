@@ -10,10 +10,10 @@ glorys_fl <- all_fl[grepl("GLORYS",all_fl)]
 
 calc_glorys_clim <- function(hfile){
   vn <- tidync(hfile) %>% hyper_vars() %>% pull('name')
-  if(!dir.exists(here('glorys_climatology'))){
-    dir.create(here('glorys_climatology'))
+  if(!dir.exists(here('GLORYS_climatology'))){
+    dir.create(here('GLORYS_climatology'))
   }
-  ofile <- paste0(here(),'/glorys_climatology/glorys_',vn,"_clim.nc")
+  ofile <- paste0(here(),'/GLORYS_climatology/glorys_',vn,"_clim.nc")
   cmd <- paste0('sudo cdo -ymonmean ',hfile,' ',ofile)
   system(cmd)
 }
