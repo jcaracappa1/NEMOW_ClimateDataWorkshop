@@ -67,7 +67,7 @@ calc_glorys_final <- function(esmfl,glorysfl,timestep, yrs=1990:2054,type='add')
 
     if(timestep=='month'){
       fxn <- ifelse(type=="add",'ymonadd','ymonmul')
-      cmd4 <- paste0('sudo cdo ',fxn,' ',here(),'/GLORYS_climatology/',glorysfl,' ',here(),'/delta_method_final_outputs/tmp2.nc ',here(),'/delta_method_final_outputs/',ofile,"_",yr,'.nc')
+      cmd4 <- paste0('sudo cdo ',fxn,' ',here(),'/delta_method_final_outputs/tmp2.nc ',here(),'/GLORYS_climatology/',glorysfl,' ',here(),'/delta_method_final_outputs/',ofile,yr,'.nc')
       # cmd4 <- paste0('sudo cdo ',fxn,' ',here(),'/delta_method_final_outputs/tmp1b.nc ',here(),'/delta_method_final_outputs/tmp2.nc ',here(),'/delta_method_final_outputs/',ofile,"_",yr,'.nc')
     }else{
       fxn <- ifelse(type=="add",'add','mul')
@@ -101,7 +101,7 @@ calc_glorys_final(esmfl = tbl_to_calc$esmfl[1],
                   type='add'
                   )
 
-purrr::pwalk(tbl_to_calc %>% slice(-(1:10)),calc_glorys_final)
+# purrr::pwalk(tbl_to_calc %>% slice(-(1:10)),calc_glorys_final)
 
 #### BELOW: Notes and Scratch work ####
 
@@ -244,9 +244,11 @@ purrr::pwalk(tbl_to_calc %>% slice(-(1:10)),calc_glorys_final)
 
 
 library(cubeview)
+
 library(stars)
-ofile <- here("delta_method_final_outputs","GFDL-CM4_delta_thetao_1990.nc")
-x = tidync(ofile) %>% hyper_tibble(select_var = 'delta_thetao') %>% filter(time == 51115.5 & lev < 3)
+ofile <- here("delta_method_final_outputs","GFDL-CM4_delta_thetao_2050.nc")
+x = tidync(ofile) %>% hyper_tibble()
+summary(x$delta_thetao)
 ggplot(x, aes(x = longitude, y= latitude, color = delta_thetao))+geom_point()
 x <- read_stars(ofile)
 y <- x %>% slice(time,1) %>% st_as_stars()
