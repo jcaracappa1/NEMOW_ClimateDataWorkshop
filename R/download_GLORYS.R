@@ -15,9 +15,9 @@ copernicus_product_details(product       = "GLOBAL_MULTIYEAR_PHY_001_030",
                            variable = "thetao")
 
 copernicus_download_motu(
-  username = "USERNAME",
-  password = "PASSWORD",
-  destination   = paste0(out_dir,'GLORYS-Monthly-1993-2000.nc'),
+  username = "",
+  password = "",
+  destination   = paste0(out_dir,'GLORYS-Monthly-1993-2000_thetao.nc'),
   product       = "GLOBAL_MULTIYEAR_PHY_001_030",
   layer         = "cmems_mod_glo_phy_my_0.083_P1M-m",
   variable      = "sea_water_velocity",

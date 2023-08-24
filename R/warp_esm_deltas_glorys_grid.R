@@ -7,8 +7,8 @@ library(here)
 # Convert to GLORYS grid horizontally and vertically
 
 # GLORYS grid file
-system(paste0('sudo cdo griddes ',here('GLORYS','GLORYS-Monthly-1993-2000.nc'),' > glorys3d.grd')) # just need to run this once
-# system('sudo cdo griddes NEP_zos_GLORYS2v4_1993-2018.nc > glorys2d.grd') # just need to run this once
+system(paste0('sudo cdo griddes ',here('GLORYS','GLORYS-Monthly-1993-2000_thetao.nc'),' > glorys3d.grd')) # just need to run this once
+system(paste0('sudo cdo griddes ',here('GLORYS','GLORYS-Monthly-1993-2000_zos.nc'),' > glorys2d.grd')) # just need to run this once
 
 # setwd("~/GLORYS_ESM_data")
 

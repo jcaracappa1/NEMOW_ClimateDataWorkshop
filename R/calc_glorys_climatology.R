@@ -21,7 +21,6 @@ calc_glorys_clim <- function(hfile){
 # apply to everything
 purrr::walk(glorys_fl,calc_glorys_clim)
 
-
 ## Step 2: Add timesteps for future!
 # all GLORYS outputs from the previous step are for year 2018
 # yrs_to_expand <- 2006:2100-2018

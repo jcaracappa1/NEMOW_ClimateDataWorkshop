@@ -4,7 +4,7 @@ library(tidyverse)
 library(tidync)
 library(here)
 
-# Sys.setenv(PATH = "/usr/bin/sudo:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin:/usr/lib/rstudio-server/bin/postback:/home/azureuser/miniconda3/bin/")
+
 ### NEW 06/09/2022: MAKE THIS 1993-2018 FOR BOTH SETS OF MODELS
 ### EXPLICITLY PLOT THE DELTAS
 
@@ -92,7 +92,7 @@ merge_esm_past_future(esm.dir = esm.dir,
                       hfile = fl_tbl$h,
                       ffile = fl_tbl$f,
                       merged.time)
-purrr::pwalk(list(esm.dir = esm.dir,hfile = fl_tbl$h,ffile = fl_tbl$f, merged.time),merge_esm_past_future)
+# purrr::pwalk(list(esm.dir = esm.dir,hfile = fl_tbl$h,ffile = fl_tbl$f, merged.time),merge_esm_past_future)
 
 # we do additive deltas for everything except chl
 mergefile <- list.files(paste0(esm.dir,"/merged_ESM"),full.names = T)
