@@ -243,26 +243,26 @@ calc_glorys_final(esmfl = tbl_to_calc$esmfl[1],
 # system('sudo cdo diffn -select,name=vo delta_method/tmp1.nc -select,name=vo delta_method/tmp2.nc')
 
 
-library(cubeview)
-
-library(stars)
-ofile <- here("delta_method_final_outputs","GFDL-CM4_delta_thetao_2050.nc")
-x = tidync(ofile) %>% hyper_tibble()
-summary(x$delta_thetao)
-ggplot(x, aes(x = longitude, y= latitude, color = delta_thetao))+geom_point()
-x <- read_stars(ofile)
-y <- x %>% slice(time,1) %>% st_as_stars()
-cubeview(y)
-
-t1 = tidync(here("delta_method_final_outputs","tmp1.nc"))
-  # hyper_tibble(select_var = 'thetao')%>%
-  # filter(time == min(time) & depth == min(depth))
-ggplot(t1,aes(x=longitude,y =latitude,color = thetao))+geom_point()
-
-t2 = tidync(here("delta_method_final_outputs","tmp2.nc"))
-  # hyper_tibble(select_var = 'delta_thetao')%>%
-  # filter(time == min(time) & lev == min(lev))
-ggplot(t2,aes(x=longitude,y =latitude,color = delta_thetao))+geom_point()
+# library(cubeview)
+# 
+# library(stars)
+# fi <- here("delta_method_final_outputs","GFDL-CM4_glorys_thetao_2050.nc")
+# x = tidync(fi) %>% hyper_tibble()
+# summary(x$delta_thetao)
+# ggplot(x, aes(x = longitude, y= latitude, color = delta_thetao))+geom_point()
+# x <- read_stars(ofile)
+# y <- x %>% slice(time,1) %>% st_as_stars()
+# cubeview(y)
+# 
+# t1 = tidync(here("delta_method_final_outputs","tmp1.nc"))
+#   # hyper_tibble(select_var = 'thetao')%>%
+#   # filter(time == min(time) & depth == min(depth))
+# ggplot(t1,aes(x=longitude,y =latitude,color = thetao))+geom_point()
+# 
+# t2 = tidync(here("delta_method_final_outputs","tmp2.nc"))
+#   # hyper_tibble(select_var = 'delta_thetao')%>%
+#   # filter(time == min(time) & lev == min(lev))
+# ggplot(t2,aes(x=longitude,y =latitude,color = delta_thetao))+geom_point()
 
 # deltanc_to_glorys(all_delta_fl[1])
 # try with one year of one file
