@@ -8,3 +8,5 @@ GLORYS_climatology/*
 ESM_climatology/*
 ESM_climatology_warp_glorys/*
 delta_method_final_outputs/*
+
+.Rhistory
