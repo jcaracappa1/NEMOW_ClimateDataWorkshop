@@ -1,13 +1,15 @@
-# GLORYS climatology using CDO
-# organize files
+# Creates GLORYS Climatology
+
+# Load dependencies
 library(tidyverse)
 library(tidync)
 library(here)
 
-# setwd("~/GLORYS_ESM_data")
+#Set directories
 all_fl <- list.files(here("GLORYS"),'.nc',full.names = T)
 glorys_fl <- all_fl[grepl("GLORYS",all_fl)]
 
+#Function to calculate glorys climatology
 calc_glorys_clim <- function(hfile){
   vn <- tidync(hfile) %>% hyper_vars() %>% pull('name')
   if(!dir.exists(here('GLORYS_climatology'))){
@@ -21,7 +23,7 @@ calc_glorys_clim <- function(hfile){
 # apply to everything
 purrr::walk(glorys_fl,calc_glorys_clim)
 
-## Step 2: Add timesteps for future!
+## Step 2: Add timesteps for future! (OPTIONAL)
 # all GLORYS outputs from the previous step are for year 2018
 # yrs_to_expand <- 2006:2100-2018
 # yrs_to_expand <- yrs_to_expand[which(yrs_to_expand!=0)]

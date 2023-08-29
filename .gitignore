@@ -5,6 +5,7 @@
 GFDL_CM4/*
 GLORYS/*
 GLORYS_climatology/*
+GLORYS_ESM_final/*
 ESM_climatology/*
 ESM_climatology_warp_glorys/*
 delta_method_final_outputs/*

@@ -1,14 +1,12 @@
-# ESM delta climatology using CDO
+# Creates ESM delta climatology using CDO
+
 # organize files
 library(tidyverse)
 library(tidync)
 library(here)
 
+#Specify data directories
 
-### NEW 06/09/2022: MAKE THIS 1993-2018 FOR BOTH SETS OF MODELS
-### EXPLICITLY PLOT THE DELTAS
-
-# setwd("~/GLORYS_ESM_data")
 esm.dir = here('GFDL_CM4')
 all_fl <- list.files(esm.dir,'*.nc',full.names = F)
 all_fl_full <- list.files(esm.dir,'*.nc',full.names = T)
@@ -18,6 +16,8 @@ gfdl_historical_fl_full <- all_fl_full[which(grepl("GFDL",all_fl)&grepl("histori
 
 gfdl_future_fl <- all_fl[which(grepl("GFDL",all_fl)&grepl("ssp245",all_fl))]
 gfdl_future_fl_full <- all_fl_full[which(grepl("GFDL",all_fl)&grepl("ssp245",all_fl_full))]
+
+#Specify time variables
 
 gfdl_historical_time = sapply(gfdl_historical_fl,function(x) strsplit(x,'_|.nc')[[1]][7],USE.NAMES = F)
 gfdl_future_time = sapply(gfdl_future_fl,function(x) strsplit(x,'_|.nc')[[1]][7],USE.NAMES = F)
@@ -63,7 +63,8 @@ calc_esm_delta <- function(mergefile,esm.dir){
   }
   system(cmd)
 }
-# for a multiplicative delta
+
+# for a multiplicative delta (OPTIONAL)
 # UPDATE 05.25.2022- UPDATING CHLOROPHYLL TRANSLATION
 # REPLACING NEGATIVE VALUES IN THE ESMs WITH SMALL POSITIVE
 calc_esm_proportional_delta <- function(mergefile){
@@ -84,6 +85,7 @@ calc_esm_proportional_delta <- function(mergefile){
   system(cmd)
 }
 
+#Creates a table to run through parameters
 fl_tbl <- tibble(h=c(gfdl_historical_fl),f=c(gfdl_future_fl))
 
 # apply to everything

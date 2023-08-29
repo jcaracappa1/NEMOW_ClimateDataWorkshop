@@ -1,12 +1,19 @@
+# Script to download GLORYS data directly from Copernicus Servers
+# Requires a Copernicus marine service account
+# https://data.marine.copernicus.eu/products
+
+#Install and load dependencies
 system("pip install motuclient==1.8.4")
 # install.packages("CopernicusMarine")
 library(CopernicusMarine)
 library(tidyverse)
 library(tidync)
 
+#Set directories
 home_dir = getwd()
 out_dir = paste0(home_dir, "/GLORYS/")
 
+#Specify lat/lon/depth bounds
 REGION = c(-78,34,-62,47)
 VERT_RANGE =  c(0, 500) 
 
